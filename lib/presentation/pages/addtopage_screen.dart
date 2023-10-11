@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:todo_now/data/database/dbhelper.dart';
+import 'package:todo_now/data/model/task_data.dart';
+import 'package:todo_now/presentation/pages/home_screen.dart';
 
 class AddTodoPage extends StatefulWidget {
   AddTodoPage({super.key});
@@ -9,12 +12,10 @@ class AddTodoPage extends StatefulWidget {
 
 class _AddTodoPageState extends State<AddTodoPage> {
   TextEditingController _titleController = TextEditingController();
-
   TextEditingController _descriptionController = TextEditingController();
-
   String type = "";
-
   String category = "";
+  final dbHelper = DatabaseHelper.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +191,25 @@ class _AddTodoPageState extends State<AddTodoPage> {
 
   Widget createButton() {
     return InkWell(
-      onTap: () {},
+      onTap: () async {
+        String title = _titleController.text;
+        String description = _descriptionController.text;
+        await dbHelper
+            .insert(TaskData(
+          title: title,
+          type: type,
+          description: description,
+          category: category,
+        ))
+            .then((value) {
+          print('task is added to database');
+        }).onError((error, stackTrace) {
+          print(error.toString());
+        });
+
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => HomeScreen()));
+      },
       child: Container(
           child: Center(
             child: Text(
@@ -226,7 +245,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
         controller: _descriptionController,
         maxLines: null,
         style: TextStyle(color: Colors.white, fontSize: 14),
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
             hintText: "Description",
             border: InputBorder.none,
             hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
@@ -246,7 +265,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
       child: TextFormField(
         controller: _titleController,
         style: TextStyle(color: Colors.white, fontSize: 14),
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
             hintText: "Task Title",
             border: InputBorder.none,
             hintStyle: TextStyle(color: Colors.grey, fontSize: 14),

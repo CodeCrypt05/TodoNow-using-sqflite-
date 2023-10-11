@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:todo_now/data/database/dbhelper.dart';
 import 'package:todo_now/presentation/pages/addtopage_screen.dart';
+import 'package:todo_now/presentation/widgets/todocard.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,18 +13,12 @@ class HomeScreen extends StatelessWidget {
     final dateFormat = DateFormat('EEEE dd');
     final formattedDate = dateFormat.format(now);
 
+    final dbHelper = DatabaseHelper.instance;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black87,
         appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.logout,
-              ),
-              onPressed: () {},
-            ),
-          ],
           backgroundColor: Colors.black87,
           title: const Text(
             "Today's schedule",
@@ -105,8 +101,83 @@ class HomeScreen extends StatelessWidget {
                 backgroundColor: Colors.red),
           ],
         ),
+        body: FutureBuilder(
+          future: dbHelper.getData(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: ((context, index) {
+                  final task = snapshot.data![index];
+                  IconData iconData = Icons.question_mark;
+                  Color iconColor = Colors.black;
+                  final category = task.category.toString();
+                  final type = task.type.toString();
+                  final title = task.title.toString();
+                  final des = task.description.toString();
+                  print(category);
+                  print(type);
+                  print(title);
+                  print(des);
+                  switch (category) {
+                    case "Work":
+                      iconData = Icons.work;
+
+                      break;
+                    case "Errands":
+                      iconData = Icons.directions_walk_outlined;
+
+                      break;
+                    case "Housework":
+                      iconData = Icons.house;
+
+                      break;
+                    case "Grocery":
+                      iconData = Icons.local_grocery_store;
+
+                      break;
+                    case "GYM":
+                      iconData = Icons.fitness_center;
+
+                      break;
+                    case "School":
+                      iconData = Icons.school;
+
+                      break;
+                    default:
+                      iconData = Icons.question_mark;
+                      iconColor = Colors.white;
+                  }
+
+                  switch (type) {
+                    case "Important":
+                      iconColor = Colors.red;
+                      break;
+                    case "Planned":
+                      iconColor = Colors.black;
+                      break;
+
+                    default:
+                      iconColor = Colors.white;
+                  }
+                  return InkWell(
+                    onTap: () {},
+                    child: TodoCard(
+                      title: title,
+                      check: true,
+                      time: "11 PM",
+                      iconBgColor: Colors.white,
+                      iconColor: iconColor,
+                      iconData: iconData,
+                    ),
+                  );
+                }),
+              );
+            }
+            return Container();
+          },
+        ),
       ),
     );
-    ;
   }
 }
